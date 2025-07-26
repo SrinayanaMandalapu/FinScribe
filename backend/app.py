@@ -1,76 +1,3 @@
-# import os
-# import fitz  # PyMuPDF for PDF
-# import docx  # python-docx for .docx
-# from flask_cors import CORS
-# from flask import Flask, request, jsonify
-# import google.generativeai as genai
-# from datetime import datetime
-# from dotenv import load_dotenv
-
-# load_dotenv()
-# # Gemini API setup
-# api_key = os.getenv('API_KEY')
-# genai.configure(api_key=api_key)
-# model = genai.GenerativeModel("gemini-1.5-flash")
-
-# app = Flask(__name__)
-# CORS(app)
-# UPLOAD_FOLDER = 'uploads'
-# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# def extract_text_from_pdf(filepath):
-#     doc = fitz.open(filepath)
-#     text = "\n".join(page.get_text() for page in doc)
-#     return text
-
-# def extract_text_from_docx(filepath):
-#     doc = docx.Document(filepath)
-#     text = "\n".join([para.text for para in doc.paragraphs])
-#     return text
-
-# @app.route('/upload', methods=['POST'])
-# def upload_file():
-#     file = request.files.get('file')
-#     if not file:
-#         return jsonify({'error': 'No file uploaded'}), 400
-
-#     filename = file.filename
-#     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#     file.save(filepath)
-
-#     if filename.endswith('.pdf'):
-#         text = extract_text_from_pdf(filepath)
-#     elif filename.endswith('.docx'):
-#         text = extract_text_from_docx(filepath)
-#     else:
-#         return jsonify({'error': 'Unsupported file type'}), 400
-
-#     # Prompt for Gemini
-#     prompt = f"""
-# You are a financial analyst. You need to analyze the given content and provide your verdict.
-# Response should be in below json format. Ex:
-# {{
-# Company Name: Name of company
-# Description: Brief description of reason in 100 words
-# Verdict: Positive or Negative
-# Date: Date
-# }}
-
-# Content:
-# {text}
-# """
-
-#     try:
-#         response = model.generate_content(prompt)
-#         return jsonify({'result': response.text})
-#     except Exception as e:
-#         return jsonify({'error': f'Gemini API error: {str(e)}'}), 500
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -83,14 +10,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")
 CORS(app)
 api_key = os.getenv('API_KEY')
-# SQLite DB config
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///documents.db'
 db = SQLAlchemy(app)
 
-# Define table model
 class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_name = db.Column(db.String(200))
@@ -101,7 +27,7 @@ class Document(db.Model):
 
 with app.app_context():
     db.create_all()
-# Configure Gemini
+
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -178,5 +104,18 @@ def get_results():
     return jsonify(output)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Serve React frontend
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_react(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, "index.html")
+
+# Run
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    with app.app_context():
+        db.create_all()
+    app.run(host="0.0.0.0", port=port)

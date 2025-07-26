@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: document-analyzer
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r backend/requirements.txt
+      cd frontend && npm install && npm run build
+    startCommand: bash backend/start.sh
+    envVars:
+      - key: API_KEY
+        value: ${API_KEY}

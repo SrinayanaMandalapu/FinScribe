@@ -1,6 +1,6 @@
 # Frontend
 /frontend/node_modules/
-/frontend/build/
+# /frontend/build/
 /frontend/dist/
 /frontend/.env
 
