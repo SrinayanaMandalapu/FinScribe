@@ -17,6 +17,10 @@ api_key = os.getenv('API_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///documents.db'
 db = SQLAlchemy(app)
 
+# Uploads Folder
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_name = db.Column(db.String(200))
