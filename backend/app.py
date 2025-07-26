@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")
+app = Flask(__name__, static_folder='../frontend/dist', static_url_path='/')
 CORS(app)
 api_key = os.getenv('API_KEY')
 
@@ -31,7 +31,6 @@ with app.app_context():
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Helper to extract text from PDF
 def extract_text_from_pdf(file_path):
     doc = fitz.open(file_path)
     text = ""
@@ -53,7 +52,7 @@ def upload_file():
         print(f"File saved to {file_path}")
 
         text = extract_text_from_pdf(file_path)
-        print(f"Extracted text: {text[:100]}...")  # print first 100 chars
+        print(f"Extracted text: {text[:100]}...")
 
         prompt = f"""You are a financial analyst. Analyze this content and provide in JSON:
 {{
@@ -87,7 +86,7 @@ Content:
         return jsonify({"message": "Document analyzed and saved"}), 200
 
     except Exception as e:
-        print(f"Error: {e}")  # 👈 PRINT FULL ERROR
+        print(f"Error: {e}")  # PRINT FULL ERROR
         return jsonify({"error": str(e)}), 500
 
 
