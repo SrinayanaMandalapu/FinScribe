@@ -33,16 +33,20 @@ function App() {
   };
 
   const fetchResults = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get("/results");
-      setResults(res.data);
-    } catch (err) {
-      setError("Failed to fetch results");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    console.log("Fetching results...");
+    const res = await axios.get("/results");
+    console.log("Fetched results:", res.data);
+    setResults(res.data);
+  } catch (err) {
+    console.error("Fetch failed:", err);
+    setError("Failed to fetch results");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchResults();  // Load data on mount
