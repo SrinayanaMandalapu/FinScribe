@@ -5,8 +5,9 @@ function App() {
   const [file, setFile] = useState(null);
   const [results, setResults] = useState([]);
   const [error, setError] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedDescription, setSelectedDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [modalContent, setModalContent] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -20,30 +21,27 @@ function App() {
     formData.append("file", file);
 
     try {
+      setLoading(true);
       await axios.post("/upload", formData);
-      fetchResults();  // Refresh data from DB
+      await fetchResults();  // Refresh data from DB
+      setFile(null);  // Clear file input
     } catch (err) {
       setError(`Upload failed: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchResults = async () => {
     try {
+      setLoading(true);
       const res = await axios.get("/results");
       setResults(res.data);
     } catch (err) {
       setError("Failed to fetch results");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleViewDescription = (desc) => {
-    setSelectedDescription(desc);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setSelectedDescription('');
   };
 
   useEffect(() => {
@@ -53,18 +51,46 @@ function App() {
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
       <h1>📄 Document Analyzer Dashboard</h1>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload} style={{ marginLeft: '1rem' }}>Upload</button>
 
-      {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
+      {/* File input and Upload Button */}
+      <div style={{ marginBottom: '1rem' }}>
+        <input
+          type="file"
+          onChange={handleFileChange}
+          style={{
+            padding: '0.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            marginRight: '1rem',
+          }}
+        />
+        <button
+          onClick={handleUpload}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Upload
+        </button>
+      </div>
 
+      {/* Loading Indicator */}
+      {loading && <p>⏳ Loading...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {/* Table */}
       <h2 style={{ marginTop: '2rem' }}>📊 Analysis Table</h2>
       {results.length === 0 ? (
         <p>No data yet</p>
       ) : (
         <table border="1" cellPadding="8" style={{ marginTop: '1rem', borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ backgroundColor: '#494848ff', color: 'white' }}>
+            <tr style={{ backgroundColor: '#494848', color: 'white' }}>
               <th>Company Name</th>
               <th>Description</th>
               <th>Verdict</th>
@@ -77,7 +103,22 @@ function App() {
               <tr key={index}>
                 <td>{res["Company Name"]}</td>
                 <td>
-                  <button onClick={() => handleViewDescription(res["Description"])}>View</button>
+                  <button
+                    onClick={() => {
+                      setModalContent(res["Description"]);
+                      setIsModalOpen(true);
+                    }}
+                    style={{
+                      padding: '0.4rem 0.8rem',
+                      backgroundColor: '#008CBA',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    View
+                  </button>
                 </td>
                 <td>{res["Verdict"]}</td>
                 <td>{res["Date"]}</td>
@@ -89,19 +130,45 @@ function App() {
       )}
 
       {/* Modal for Description */}
-      {modalOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
-          justifyContent: 'center', alignItems: 'center'
-        }}>
-          <div style={{
-            backgroundColor: 'white', padding: '2rem', borderRadius: '8px',
-            maxWidth: '600px', maxHeight: '80%', overflowY: 'auto'
-          }}>
+      {isModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 999,
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
+              maxWidth: '600px',
+              maxHeight: '80%',
+              overflowY: 'auto',
+              textAlign: 'left',
+            }}
+          >
             <h3>Description</h3>
-            <p>{selectedDescription}</p>
-            <button onClick={closeModal} style={{ marginTop: '1rem' }}>Close</button>
+            <p>{modalContent}</p>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              style={{
+                marginTop: '1rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#f44336',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
