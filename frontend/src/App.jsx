@@ -9,6 +9,13 @@ function App() {
   const [modalContent, setModalContent] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Filter state
+  const [searchTerm, setSearchTerm] = useState('');
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setError('');
@@ -23,8 +30,8 @@ function App() {
     try {
       setLoading(true);
       await axios.post("/upload", formData);
-      await fetchResults();  // Refresh data from DB
-      setFile(null);  // Clear file input
+      await fetchResults();
+      setFile(null);
     } catch (err) {
       setError(`Upload failed: ${err.message}`);
     } finally {
@@ -33,24 +40,42 @@ function App() {
   };
 
   const fetchResults = async () => {
-  try {
-    setLoading(true);
-    console.log("Fetching results...");
-    const res = await axios.get("/results");
-    console.log("Fetched results:", res.data);
-    setResults(res.data);
-  } catch (err) {
-    console.error("Fetch failed:", err);
-    setError("Failed to fetch results");
-  } finally {
-    setLoading(false);
-  }
-};
-
+    try {
+      setLoading(true);
+      const res = await axios.get("/results");
+      setResults(res.data);
+    } catch (err) {
+      setError("Failed to fetch results");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchResults();  // Load data on mount
+    fetchResults();
   }, []);
+
+  // Filtered results
+  const filteredResults = results.filter((res) => {
+    const name = res["Company Name"]?.toLowerCase() || '';
+    const date = res["Date"]?.toLowerCase() || '';
+    const term = searchTerm.toLowerCase();
+    return name.includes(term) || date.includes(term);
+  });
+
+  // Pagination logic
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = filteredResults.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) setCurrentPage(prev => prev - 1);
+  };
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
@@ -83,54 +108,108 @@ function App() {
         </button>
       </div>
 
-      {/* Loading Indicator */}
+      {/* Filter Input */}
+      <div style={{ marginBottom: '1rem' }}>
+        <input
+          type="text"
+          placeholder="Search by company name or date"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: '0.5rem',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            width: '300px',
+          }}
+        />
+      </div>
+
+      {/* Loading and Error */}
       {loading && <p>⏳ Loading...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {/* Table */}
       <h2 style={{ marginTop: '2rem' }}>📊 Analysis Table</h2>
-      {results.length === 0 ? (
-        <p>No data yet</p>
+      {currentItems.length === 0 ? (
+        <p>No data found</p>
       ) : (
-        <table border="1" cellPadding="8" style={{ marginTop: '1rem', borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#494848', color: 'white' }}>
-              <th>Company Name</th>
-              <th>Description</th>
-              <th>Verdict</th>
-              <th>Date</th>
-              <th>Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((res, index) => (
-              <tr key={index}>
-                <td>{res["Company Name"]}</td>
-                <td>
-                  <button
-                    onClick={() => {
-                      setModalContent(res["Description"]);
-                      setIsModalOpen(true);
-                    }}
-                    style={{
-                      padding: '0.4rem 0.8rem',
-                      backgroundColor: '#008CBA',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    View
-                  </button>
-                </td>
-                <td>{res["Verdict"]}</td>
-                <td>{res["Date"]}</td>
-                <td>{res["Timestamp"]}</td>
+        <>
+          <table border="1" cellPadding="8" style={{ marginTop: '1rem', borderCollapse: 'collapse', width: '100%' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#494848', color: 'white' }}>
+                <th>Company Name</th>
+                <th>Description</th>
+                <th>Verdict</th>
+                <th>Date</th>
+                <th>Timestamp</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {currentItems.map((res, index) => (
+                <tr key={index}>
+                  <td>{res["Company Name"]}</td>
+                  <td>
+                    <button
+                      onClick={() => {
+                        setModalContent(res["Description"]);
+                        setIsModalOpen(true);
+                      }}
+                      style={{
+                        padding: '0.4rem 0.8rem',
+                        backgroundColor: '#008CBA',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      View
+                    </button>
+                  </td>
+                  <td>{res["Verdict"]}</td>
+                  <td>{res["Date"]}</td>
+                  <td>{res["Timestamp"]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Pagination Controls */}
+          <div style={{ marginTop: '1rem' }}>
+            <button
+              onClick={goToPrevPage}
+              disabled={currentPage === 1}
+              style={{
+                marginRight: '1rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#555',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Prev
+            </button>
+            <button
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#555',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Next
+            </button>
+            <span style={{ marginLeft: '1rem' }}>
+              Page {currentPage} of {totalPages}
+            </span>
+          </div>
+        </>
       )}
 
       {/* Modal for Description */}
