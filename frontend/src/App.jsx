@@ -5,6 +5,8 @@ function App() {
   const [file, setFile] = useState(null);
   const [results, setResults] = useState([]);
   const [error, setError] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedDescription, setSelectedDescription] = useState('');
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -34,6 +36,16 @@ function App() {
     }
   };
 
+  const handleViewDescription = (desc) => {
+    setSelectedDescription(desc);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedDescription('');
+  };
+
   useEffect(() => {
     fetchResults();  // Load data on mount
   }, []);
@@ -52,7 +64,7 @@ function App() {
       ) : (
         <table border="1" cellPadding="8" style={{ marginTop: '1rem', borderCollapse: 'collapse', width: '100%' }}>
           <thead>
-            <tr style={{ backgroundColor: '#f0f0f0' }}>
+            <tr style={{ backgroundColor: '#494848ff', color: 'white' }}>
               <th>Company Name</th>
               <th>Description</th>
               <th>Verdict</th>
@@ -64,7 +76,9 @@ function App() {
             {results.map((res, index) => (
               <tr key={index}>
                 <td>{res["Company Name"]}</td>
-                <td>{res["Description"]}</td>
+                <td>
+                  <button onClick={() => handleViewDescription(res["Description"])}>View</button>
+                </td>
                 <td>{res["Verdict"]}</td>
                 <td>{res["Date"]}</td>
                 <td>{res["Timestamp"]}</td>
@@ -72,6 +86,24 @@ function App() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* Modal for Description */}
+      {modalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+          justifyContent: 'center', alignItems: 'center'
+        }}>
+          <div style={{
+            backgroundColor: 'white', padding: '2rem', borderRadius: '8px',
+            maxWidth: '600px', maxHeight: '80%', overflowY: 'auto'
+          }}>
+            <h3>Description</h3>
+            <p>{selectedDescription}</p>
+            <button onClick={closeModal} style={{ marginTop: '1rem' }}>Close</button>
+          </div>
+        </div>
       )}
     </div>
   );
