@@ -13,7 +13,7 @@ load_dotenv()
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='/')
 CORS(app)
 api_key = os.getenv('API_KEY')
-app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
