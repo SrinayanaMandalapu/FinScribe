@@ -217,13 +217,17 @@ function App() {
   <div
     style={{
       position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 999,
-      padding: '1rem', // Add padding for small screens
+      padding: '1rem',
+      boxSizing: 'border-box',
     }}
   >
     <div
@@ -236,11 +240,24 @@ function App() {
         maxHeight: '80vh',
         overflowY: 'auto',
         textAlign: 'left',
+        color: 'black', 
         boxSizing: 'border-box',
       }}
     >
       <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Description</h3>
-      <p style={{ fontSize: '1rem', whiteSpace: 'pre-wrap' }}>{modalContent}</p>
+
+      <div style={{
+        fontSize: '1rem',
+        whiteSpace: 'pre-wrap',
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word',
+        maxHeight: '60vh',
+        overflowY: 'auto',
+        color: 'black',  
+      }}>
+        {modalContent ? modalContent : <i>No description available</i>}
+      </div>
+
       <button
         onClick={() => setIsModalOpen(false)}
         style={{
