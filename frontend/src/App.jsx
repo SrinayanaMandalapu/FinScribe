@@ -214,47 +214,52 @@ function App() {
 
       {/* Modal for Description */}
       {isModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 999,
-          }}
-        >
-          <div
-            style={{
-              background: 'white',
-              padding: '2rem',
-              borderRadius: '8px',
-              maxWidth: '600px',
-              maxHeight: '80%',
-              overflowY: 'auto',
-              textAlign: 'left',
-            }}
-          >
-            <h3>Description</h3>
-            <p>{modalContent}</p>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              style={{
-                marginTop: '1rem',
-                padding: '0.5rem 1rem',
-                backgroundColor: '#f44336',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+  <div
+    style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 999,
+      padding: '1rem', // Add padding for small screens
+    }}
+  >
+    <div
+      style={{
+        background: 'white',
+        padding: '1rem',
+        borderRadius: '8px',
+        width: '100%',
+        maxWidth: '600px',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+        textAlign: 'left',
+        boxSizing: 'border-box',
+      }}
+    >
+      <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Description</h3>
+      <p style={{ fontSize: '1rem', whiteSpace: 'pre-wrap' }}>{modalContent}</p>
+      <button
+        onClick={() => setIsModalOpen(false)}
+        style={{
+          marginTop: '1rem',
+          padding: '0.5rem 1rem',
+          backgroundColor: '#f44336',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          
+        }}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
