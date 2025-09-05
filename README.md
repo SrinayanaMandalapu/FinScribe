@@ -3,6 +3,8 @@
 FinScribe is a web application that helps analyze **conference call and earnings call transcripts**.  
 It allows users to upload PDF documents, extract key insights using **Generative AI**, and store results in a structured database for easy retrieval and visualization.
 
+🔗 **Live Demo**: https://document-analyzer-2kuo.onrender.com/
+
 ---
 
 ## 🚀 Features Implemented
@@ -54,3 +56,14 @@ DATABASE_URL=postgresql+psycopg2://username:password@localhost:5432/db_name
     cd frontend
     npm install
     npm run dev
+
+---
+
+## 🔜 Work in Progress & Future Enhancements
+
+- 🌐 Automated transcript scraping from NSE and similar investor relation sources.  
+- ☁️ Migration to cost-efficient private cloud APIs for scalability.  
+- 📲 Subscriber alerts via WhatsApp/Email for key updates.  
+- 🤖 Future integration with automated trading workflows.  
+
+
